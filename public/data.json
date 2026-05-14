@@ -1,0 +1,67 @@
+{
+  "projects": [
+    {
+      "title": "Custom Redis Server",
+      "desc": "A Redis-compatible server written in Java.",
+      "tags": [
+        "Java",
+        "Redis",
+        "Networking"
+      ],
+      "role": "Backend Engineer",
+      "year": "2026",
+      "type": "Infrastructure",
+      "overview": "Implemented RESP parsing, replication, and persistence.",
+      "outcome": "Built a production-style distributed systems project."
+    },
+    {
+      "title": "Kafka Logging Pipeline",
+      "desc": "Redis logs streamed to Kafka and OpenObserve.",
+      "tags": [
+        "Kafka",
+        "Go",
+        "Observability"
+      ],
+      "role": "Systems Engineer",
+      "year": "2026",
+      "type": "Monitoring",
+      "overview": "Built a log ingestion and analytics pipeline.",
+      "outcome": "Gained experience with event-driven architectures."
+    },
+    {
+      "title": "Portfolio Website",
+      "desc": "Interactive portfolio with editable JSON content.",
+      "tags": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "role": "Frontend Developer",
+      "year": "2026",
+      "type": "Web Development",
+      "overview": "Created a single-page portfolio driven by JSON.",
+      "outcome": "Made content updates easy and non-technical."
+    },
+    {
+      "title": "Portfolio Website",
+      "desc": "Interactive portfolio with editable JSON content.",
+      "tags": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "role": "Frontend Developer",
+      "year": "2026",
+      "type": "Web Development",
+      "overview": "Created a single-page portfolio driven by JSON.",
+      "outcome": "Made content updates easy and non-technical."
+    }
+  ]
+}
+
+
+
+
+
+
+

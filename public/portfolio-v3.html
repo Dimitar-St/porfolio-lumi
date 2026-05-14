@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --red:#e03030;--red-dim:rgba(224,48,48,0.15);
+  --white:#f5f0eb;--white-dim:rgba(245,240,235,0.45);--white-mid:rgba(245,240,235,0.75);
+  --black:#050507;--black2:#0c0c10;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:'DM Mono',monospace;font-weight:300;overflow-x:hidden;cursor:none;}
+
+/* CURSOR */
+#cur{position:fixed;width:8px;height:8px;background:var(--red);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s;}
+#cur-ring{position:fixed;width:34px;height:34px;border:1px solid rgba(224,48,48,.45);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:border-color .3s,transform .3s;}
+
+/* GALAXY */
+#galaxy{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.6rem 3.5rem;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(6px);border-bottom:1px solid rgba(245,240,235,0.05);}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.1em;color:var(--white);text-decoration:none;cursor:none;}
+.nav-logo span{color:var(--red);}
+nav ul{list-style:none;display:flex;gap:2.5rem;}
+nav ul a{color:var(--white-dim);text-decoration:none;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;transition:color .3s;position:relative;cursor:none;}
+nav ul a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--red);transition:width .3s;}
+nav ul a:hover{color:var(--white);}
+nav ul a:hover::after{width:100%;}
+
+/* EDIT MODE TOGGLE */
+.edit-fab{position:fixed;bottom:2.5rem;right:2.5rem;z-index:500;background:var(--red);color:var(--white);border:none;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;padding:.75rem 1.4rem;cursor:pointer;transition:background .3s,transform .2s;display:flex;align-items:center;gap:.5rem;}
+.edit-fab:hover{background:#c02020;transform:scale(1.04);}
+.edit-fab.active{background:#0a8a3a;}
+
+/* EDIT PANEL */
+.edit-panel{position:fixed;top:0;right:-460px;width:440px;height:100vh;background:rgba(12,12,16,0.97);border-left:1px solid rgba(224,48,48,.25);z-index:400;overflow-y:auto;transition:right .4s cubic-bezier(.22,1,.36,1);padding:2rem 1.8rem 6rem;}
+.edit-panel.open{right:0;}
+.edit-panel-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.06em;margin-bottom:.4rem;}
+.edit-panel-sub{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-bottom:2rem;}
+.ep-section{margin-bottom:2rem;border-top:1px solid rgba(245,240,235,.07);padding-top:1.4rem;}
+.ep-section-title{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--red);margin-bottom:1rem;}
+.ep-row{margin-bottom:1rem;}
+.ep-label{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--white-dim);margin-bottom:.35rem;display:block;}
+.ep-input,.ep-textarea{width:100%;background:rgba(245,240,235,.05);border:1px solid rgba(245,240,235,.1);color:var(--white);font-family:'DM Mono',monospace;font-size:.7rem;padding:.6rem .9rem;outline:none;transition:border-color .3s;resize:vertical;}
+.ep-input:focus,.ep-textarea:focus{border-color:rgba(224,48,48,.5);}
+.ep-textarea{min-height:80px;}
+.ep-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+.ep-tab{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;padding:.5rem 1rem;border:1px solid rgba(245,240,235,.1);background:transparent;color:var(--white-dim);cursor:pointer;transition:all .25s;font-family:'DM Mono',monospace;}
+.ep-tab.active{border-color:var(--red);color:var(--white);background:rgba(224,48,48,.1);}
+.ep-save-btn{width:100%;background:var(--red);border:none;color:var(--white);font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;padding:1rem;cursor:pointer;margin-top:.5rem;transition:background .3s;}
+.ep-save-btn:hover{background:#c02020;}
+.ep-tag-list{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem;}
+.ep-tag{font-size:.56rem;padding:.2rem .6rem;border:1px solid rgba(245,240,235,.15);color:var(--white-dim);cursor:pointer;display:flex;align-items:center;gap:.35rem;}
+.ep-tag span{color:var(--red);}
+.ep-tag-add{display:flex;gap:.4rem;margin-top:.3rem;}
+.ep-tag-add input{flex:1;background:rgba(245,240,235,.05);border:1px solid rgba(245,240,235,.1);color:var(--white);font-family:'DM Mono',monospace;font-size:.65rem;padding:.4rem .7rem;outline:none;}
+.ep-tag-add button{background:rgba(224,48,48,.2);border:1px solid rgba(224,48,48,.4);color:var(--white);font-size:.65rem;padding:.4rem .8rem;cursor:pointer;font-family:'DM Mono',monospace;}
+.ep-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+.ep-note{font-size:.6rem;color:rgba(245,240,235,.3);line-height:1.7;margin-top:.5rem;}
+
+/* SECTION wrapper */
+section{position:relative;z-index:1;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* ─── HERO ─── */
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 4rem;padding-top:7rem;}
+.hero-eyebrow{font-size:.62rem;letter-spacing:.35em;text-transform:uppercase;color:var(--red);margin-bottom:1.6rem;opacity:0;animation:fadeUp .8s .3s forwards;}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,13vw,12.5rem);line-height:.88;letter-spacing:-.01em;opacity:0;animation:fadeUp .9s .5s forwards;}
+.hero-title em{font-style:italic;font-family:'Cormorant Garamond',serif;color:var(--white-dim);}
+.hero-sub{max-width:460px;font-size:.78rem;line-height:2;color:var(--white-dim);margin-top:2.5rem;opacity:0;animation:fadeUp .9s .75s forwards;}
+.hero-cta{margin-top:3rem;display:flex;gap:1.8rem;align-items:center;opacity:0;animation:fadeUp .9s 1s forwards;}
+.btn-primary{display:inline-flex;align-items:center;gap:.6rem;padding:.85rem 2rem;border:1px solid var(--red);color:var(--white);text-decoration:none;font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;transition:background .3s,color .3s;cursor:none;}
+.btn-primary:hover{background:var(--red);}
+.btn-ghost{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--white-dim);text-decoration:none;transition:color .3s;cursor:none;}
+.btn-ghost:hover{color:var(--white);}
+.scroll-hint{position:absolute;bottom:2.5rem;left:4rem;display:flex;align-items:center;gap:1rem;opacity:0;animation:fadeUp 1s 1.4s forwards;}
+.scroll-line{width:56px;height:1px;background:rgba(245,240,235,.15);position:relative;overflow:hidden;}
+.scroll-line::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:var(--red);animation:sweep 2.4s 2s infinite;}
+.scroll-label{font-size:.58rem;letter-spacing:.25em;text-transform:uppercase;color:var(--white-dim);}
+
+/* SHARED */
+.section-label{font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;color:var(--red);margin-bottom:.8rem;}
+.red-rule{width:48px;height:2px;background:var(--red);margin-bottom:2rem;}
+
+/* ─── ABOUT ─── */
+#about{display:grid;grid-template-columns:1fr 1fr;gap:5rem;padding:9rem 4rem;align-items:center;}
+.about-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2.5rem,5vw,4.2rem);font-weight:300;font-style:italic;line-height:1.1;margin-bottom:2rem;}
+.about-body{font-size:.76rem;line-height:2;color:var(--white-dim);margin-bottom:1.4rem;}
+.about-stats{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3rem;}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:3.2rem;color:var(--white);line-height:1;}
+.stat-num span{color:var(--red);}
+.stat-lbl{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--white-dim);margin-top:.3rem;}
+.about-frame-wrap{position:relative;}
+.about-frame{width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,#1a0808 0%,#0c0c14 60%,#080810 100%);border:1px solid rgba(224,48,48,.18);position:relative;overflow:hidden;}
+.about-frame::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 70%,rgba(224,48,48,.1) 0%,transparent 65%);}
+.frame-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(245,240,235,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,240,235,.04) 1px,transparent 1px);background-size:36px 36px;}
+.frame-name{position:absolute;bottom:2rem;left:2rem;right:2rem;}
+.frame-name h3{font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:.04em;line-height:1;}
+.frame-name p{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-top:.5rem;}
+.corner{position:absolute;width:52px;height:52px;}
+.corner.tr{top:-10px;right:-10px;border-top:2px solid var(--red);border-right:2px solid var(--red);}
+.corner.bl{bottom:-10px;left:-10px;border-bottom:2px solid var(--red);border-left:2px solid var(--red);}
+
+/* ─── WORK ─── */
+#work{padding:9rem 4rem;}
+.work-intro{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:5rem;}
+.work-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,8vw,7rem);line-height:.9;}
+.work-sub-note{font-size:.62rem;letter-spacing:.18em;color:var(--white-dim);padding-bottom:.4rem;}
+.projects{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;}
+.project-card{display:flex;flex-direction:column;border:1px solid rgba(245,240,235,.07);background:var(--black2);position:relative;overflow:hidden;transition:border-color .4s;cursor:none;}
+.project-card:hover{border-color:rgba(224,48,48,.35);}
+.project-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.22,1,.36,1);}
+.project-card:hover::before{transform:scaleX(1);}
+.media-slot{width:100%;aspect-ratio:16/10;background:#0a0a0e;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;}
+.media-slot img,.media-slot video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+.media-slot-placeholder{display:flex;flex-direction:column;align-items:center;gap:.8rem;pointer-events:none;transition:opacity .3s;}
+.project-card:hover .media-slot-placeholder{opacity:.5;}
+.placeholder-icon{width:48px;height:48px;border:1px solid rgba(245,240,235,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.placeholder-icon svg{width:20px;height:20px;stroke:rgba(245,240,235,.4);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+.placeholder-label{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,240,235,.25);text-align:center;padding:0 1rem;}
+.placeholder-types{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;padding:0 1rem;}
+.ptype{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;padding:.25rem .6rem;border:1px solid rgba(245,240,235,.1);color:rgba(245,240,235,.2);}
+.media-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,5,7,.9) 0%,transparent 50%);opacity:0;transition:opacity .4s;}
+.project-card:hover .media-overlay{opacity:1;}
+.card-body{padding:1.8rem 1.6rem 2rem;}
+.card-num{font-size:.58rem;letter-spacing:.25em;color:var(--red);margin-bottom:1rem;}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:1.55rem;font-weight:300;font-style:italic;line-height:1.2;margin-bottom:.8rem;transition:color .3s;}
+.project-card:hover .card-title{color:var(--white);}
+.card-desc{font-size:.7rem;line-height:1.85;color:var(--white-dim);margin-bottom:1.4rem;}
+.card-tags{display:flex;gap:.5rem;flex-wrap:wrap;}
+.tag{font-size:.56rem;letter-spacing:.15em;text-transform:uppercase;color:var(--white-dim);padding:.22rem .65rem;border:1px solid rgba(245,240,235,.1);}
+.card-footer{margin-top:auto;padding:1.2rem 1.6rem;border-top:1px solid rgba(245,240,235,.06);display:flex;justify-content:space-between;align-items:center;}
+.card-link{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--white-dim);text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .3s;cursor:none;}
+.card-link:hover{color:var(--red);}
+.card-arrow{font-size:1.1rem;color:var(--white-dim);transition:color .3s,transform .3s;}
+.project-card:hover .card-arrow{color:var(--red);transform:translate(3px,-3px);}
+
+/* ─── PROJECT DETAIL PAGE ─── */
+#project-detail{min-height:100vh;padding:10rem 4rem 6rem;}
+.pd-back{display:inline-flex;align-items:center;gap:.6rem;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--white-dim);text-decoration:none;margin-bottom:3rem;transition:color .3s;cursor:none;background:none;border:none;}
+.pd-back:hover{color:var(--red);}
+.pd-eyebrow{font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;color:var(--red);margin-bottom:1rem;}
+.pd-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(4rem,10vw,9rem);line-height:.9;margin-bottom:2.5rem;}
+.pd-meta{display:flex;gap:3rem;margin-bottom:4rem;padding-bottom:2rem;border-bottom:1px solid rgba(245,240,235,.07);}
+.pd-meta-item label{display:block;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:.3rem;}
+.pd-meta-item span{font-size:.72rem;color:var(--white-dim);}
+.pd-media{width:100%;aspect-ratio:16/8;background:#0a0a0e;border:1px solid rgba(245,240,235,.07);position:relative;overflow:hidden;margin-bottom:4rem;display:flex;align-items:center;justify-content:center;}
+.pd-media img,.pd-media video{width:100%;height:100%;object-fit:cover;}
+.pd-media-placeholder{text-align:center;color:rgba(245,240,235,.2);}
+.pd-media-placeholder p{font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;margin-top:.8rem;}
+.pd-body-grid{display:grid;grid-template-columns:1fr 1fr;gap:6rem;margin-bottom:4rem;}
+.pd-section-label{font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;color:var(--red);margin-bottom:.8rem;}
+.pd-rule{width:48px;height:1px;background:var(--red);margin-bottom:1.5rem;}
+.pd-text{font-size:.76rem;line-height:2;color:var(--white-dim);}
+.pd-tags{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:2rem;}
+.pd-gallery{display:grid;grid-template-columns:1fr 1fr;gap:1.5px;margin-top:4rem;}
+.pd-gallery-slot{aspect-ratio:16/10;background:#0a0a0e;border:1px solid rgba(245,240,235,.05);display:flex;align-items:center;justify-content:center;}
+.pd-gallery-slot img{width:100%;height:100%;object-fit:cover;}
+.pd-gallery-empty{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(245,240,235,.15);}
+
+/* ─── SKILLS ─── */
+#skills{padding:9rem 4rem;background:rgba(224,48,48,.025);}
+.skills-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;margin-top:4rem;}
+.skill-block{padding:2.2rem 1.8rem;border:1px solid rgba(245,240,235,.06);position:relative;overflow:hidden;transition:border-color .3s;}
+.skill-block:hover{border-color:rgba(224,48,48,.35);}
+.skill-block::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;height:0;background:var(--red);transition:height .4s ease;}
+.skill-block:hover::before{height:100%;}
+.skill-num{font-size:.58rem;letter-spacing:.2em;color:var(--red);margin-bottom:1rem;text-transform:uppercase;}
+.skill-name{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;margin-bottom:.7rem;}
+.skill-desc{font-size:.7rem;line-height:1.85;color:var(--white-dim);}
+.skill-bar{margin-top:1.4rem;height:1px;background:rgba(245,240,235,.08);position:relative;overflow:hidden;}
+.skill-fill{position:absolute;top:0;left:0;height:100%;background:var(--red);width:0;transition:width 1.3s cubic-bezier(.22,1,.36,1);}
+
+/* ─── APPENDIX ─── */
+#appendix{padding:9rem 4rem;}
+.appendix-intro{max-width:640px;margin-bottom:5rem;}
+.appendix-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,8vw,7rem);line-height:.9;margin-bottom:2rem;}
+.appendix-items{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5px;}
+.appendix-item{padding:2rem 2rem;border:1px solid rgba(245,240,235,.07);background:var(--black2);position:relative;overflow:hidden;transition:border-color .4s;}
+.appendix-item:hover{border-color:rgba(224,48,48,.35);}
+.appendix-item::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.22,1,.36,1);}
+.appendix-item:hover::before{transform:scaleX(1);}
+.appendix-item-num{font-size:.55rem;letter-spacing:.25em;color:var(--red);margin-bottom:.8rem;}
+.appendix-item-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;font-style:italic;margin-bottom:.7rem;}
+.appendix-item-desc{font-size:.7rem;line-height:1.85;color:var(--white-dim);}
+.appendix-item-link{display:inline-flex;align-items:center;gap:.4rem;margin-top:1rem;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--white-dim);text-decoration:none;transition:color .3s;cursor:none;}
+.appendix-item-link:hover{color:var(--red);}
+.appendix-add-btn{margin-top:3rem;padding:.85rem 2rem;border:1px solid rgba(224,48,48,.35);color:var(--white-dim);background:transparent;font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;transition:all .3s;}
+.appendix-add-btn:hover{border-color:var(--red);color:var(--white);background:rgba(224,48,48,.08);}
+.appendix-empty{font-size:.7rem;color:rgba(245,240,235,.25);letter-spacing:.15em;text-transform:uppercase;padding:3rem 0;}
+
+/* ─── CONTACT ─── */
+#contact{padding:9rem 4rem;display:flex;flex-direction:column;align-items:center;text-align:center;min-height:80vh;justify-content:center;}
+.contact-eyebrow{font-size:.62rem;letter-spacing:.35em;text-transform:uppercase;color:var(--red);margin-bottom:1.5rem;}
+.contact-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(4rem,12vw,10rem);line-height:.9;margin-bottom:2rem;}
+.contact-sub{font-size:.78rem;line-height:2;color:var(--white-dim);max-width:380px;margin-bottom:3rem;}
+.contact-email{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-style:italic;color:var(--white);text-decoration:none;border-bottom:1px solid var(--red);padding-bottom:.3rem;transition:color .3s;cursor:none;}
+.contact-email:hover{color:var(--red);}
+.socials{display:flex;gap:2rem;margin-top:3rem;}
+.soc-link{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--white-dim);text-decoration:none;transition:color .3s;cursor:none;}
+.soc-link:hover{color:var(--white);}
+
+/* FOOTER */
+footer{position:relative;z-index:1;padding:1.8rem 4rem;border-top:1px solid rgba(245,240,235,.05);display:flex;justify-content:space-between;align-items:center;}
+.foot-copy{font-size:.62rem;letter-spacing:.1em;color:var(--white-dim);}
+.foot-copy span{color:var(--red);}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+@keyframes sweep{0%{left:-100%;}50%{left:0;}100%{left:100%;}}
+@keyframes panelIn{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .85s ease,transform .85s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* TOAST */
+.toast{position:fixed;bottom:5.5rem;right:2.5rem;background:#0a8a3a;color:#fff;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;padding:.7rem 1.4rem;z-index:600;opacity:0;transform:translateY(10px);transition:opacity .3s,transform .3s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+
+@media(max-width:900px){
+  #about{grid-template-columns:1fr;gap:3rem;}
+  .projects{grid-template-columns:1fr;}
+  .skills-grid{grid-template-columns:1fr 1fr;}
+  .pd-body-grid{grid-template-columns:1fr;}
+  .appendix-items{grid-template-columns:1fr;}
+  .pd-gallery{grid-template-columns:1fr;}
+}
+@media(max-width:600px){
+  nav{padding:1.2rem 1.5rem;}
+  #hero,#about,#work,#skills,#contact,#appendix,#project-detail{padding-left:1.5rem;padding-right:1.5rem;}
+  .skills-grid{grid-template-columns:1fr;}
+  .edit-panel{width:100%;}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<canvas id="galaxy"></canvas>
+<div class="toast" id="toast">Changes saved</div>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="#" class="nav-logo" onclick="navigate('home');return false;" id="nav-logo">AV<span>.</span></a>
+  <ul>
+    <li><a href="#" onclick="navigate('home','about');return false;">About</a></li>
+    <li><a href="#" onclick="navigate('home','work');return false;">Work</a></li>
+    <li><a href="#" onclick="navigate('home','skills');return false;">Skills</a></li>
+    <li><a href="#" onclick="navigate('home','appendix');return false;">Appendix</a></li>
+    <li><a href="#" onclick="navigate('home','contact');return false;">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- EDIT PANEL -->
+<div class="edit-panel" id="editPanel">
+  <div class="edit-panel-title">Edit Portfolio</div>
+  <div class="edit-panel-sub">// Changes persist across sessions</div>
+
+  <div class="ep-tabs" id="epTabs">
+    <button class="ep-tab active" onclick="switchTab('general')">General</button>
+    <button class="ep-tab" onclick="switchTab('project1')">Project 1</button>
+    <button class="ep-tab" onclick="switchTab('project2')">Project 2</button>
+    <button class="ep-tab" onclick="switchTab('project3')">Project 3</button>
+    <button class="ep-tab" onclick="switchTab('skills')">Skills</button>
+    <button class="ep-tab" onclick="switchTab('appendix')">Appendix</button>
+    <button class="ep-tab" onclick="switchTab('contact')">Contact</button>
+  </div>
+
+  <!-- GENERAL TAB -->
+  <div id="tab-general" class="ep-tab-content">
+    <div class="ep-section">
+      <div class="ep-section-title">// Identity</div>
+      <div class="ep-row"><label class="ep-label">Logo initials</label><input class="ep-input" id="f-logoInitials" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Full Name</label><input class="ep-input" id="f-name" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Role / tagline (frame card)</label><input class="ep-input" id="f-role" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Hero eyebrow</label><input class="ep-input" id="f-heroEyebrow" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Hero subtitle</label><textarea class="ep-textarea" id="f-heroSub"></textarea></div>
+    </div>
+    <div class="ep-section">
+      <div class="ep-section-title">// About</div>
+      <div class="ep-row"><label class="ep-label">About heading</label><input class="ep-input" id="f-aboutTitle" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Paragraph 1</label><textarea class="ep-textarea" id="f-aboutP1"></textarea></div>
+      <div class="ep-row"><label class="ep-label">Paragraph 2</label><textarea class="ep-textarea" id="f-aboutP2"></textarea></div>
+    </div>
+    <div class="ep-section">
+      <div class="ep-section-title">// Stats</div>
+      <div class="ep-stat-grid">
+        <div class="ep-row"><label class="ep-label">Stat 1 number</label><input class="ep-input" id="f-stat1n" type="text"></div>
+        <div class="ep-row"><label class="ep-label">Stat 1 label</label><input class="ep-input" id="f-stat1l" type="text"></div>
+        <div class="ep-row"><label class="ep-label">Stat 2 number</label><input class="ep-input" id="f-stat2n" type="text"></div>
+        <div class="ep-row"><label class="ep-label">Stat 2 label</label><input class="ep-input" id="f-stat2l" type="text"></div>
+        <div class="ep-row"><label class="ep-label">Stat 3 number</label><input class="ep-input" id="f-stat3n" type="text"></div>
+        <div class="ep-row"><label class="ep-label">Stat 3 label</label><input class="ep-input" id="f-stat3l" type="text"></div>
+        <div class="ep-row"><label class="ep-label">Stat 4 number</label><input class="ep-input" id="f-stat4n" type="text"></div>
+        <div class="ep-row"><label class="ep-label">Stat 4 label</label><input class="ep-input" id="f-stat4l" type="text"></div>
+      </div>
+    </div>
+    <button class="ep-save-btn" onclick="saveAll()">Save All Changes</button>
+  </div>
+
+  <!-- PROJECT TABS (1,2,3) -->
+  <div id="tab-project1" class="ep-tab-content" style="display:none"></div>
+  <div id="tab-project2" class="ep-tab-content" style="display:none"></div>
+  <div id="tab-project3" class="ep-tab-content" style="display:none"></div>
+
+  <!-- SKILLS TAB -->
+  <div id="tab-skills" class="ep-tab-content" style="display:none">
+    <div class="ep-section" id="skills-editor"></div>
+    <button class="ep-save-btn" onclick="saveAll()">Save All Changes</button>
+  </div>
+
+  <!-- APPENDIX TAB -->
+  <div id="tab-appendix" class="ep-tab-content" style="display:none">
+    <div class="ep-section" id="appendix-editor"></div>
+    <button class="ep-save-btn" onclick="saveAll()">Save All Changes</button>
+  </div>
+
+  <!-- CONTACT TAB -->
+  <div id="tab-contact" class="ep-tab-content" style="display:none">
+    <div class="ep-section">
+      <div class="ep-section-title">// Contact</div>
+      <div class="ep-row"><label class="ep-label">Email address</label><input class="ep-input" id="f-email" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Contact subtitle</label><textarea class="ep-textarea" id="f-contactSub"></textarea></div>
+      <div class="ep-row"><label class="ep-label">Social 1 label</label><input class="ep-input" id="f-soc1l" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Social 1 URL</label><input class="ep-input" id="f-soc1u" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Social 2 label</label><input class="ep-input" id="f-soc2l" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Social 2 URL</label><input class="ep-input" id="f-soc2u" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Social 3 label</label><input class="ep-input" id="f-soc3l" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Social 3 URL</label><input class="ep-input" id="f-soc3u" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Social 4 label</label><input class="ep-input" id="f-soc4l" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Social 4 URL</label><input class="ep-input" id="f-soc4u" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Footer city</label><input class="ep-input" id="f-city" type="text"></div>
+      <div class="ep-row"><label class="ep-label">Footer year / name</label><input class="ep-input" id="f-footerName" type="text"></div>
+    </div>
+    <button class="ep-save-btn" onclick="saveAll()">Save All Changes</button>
+  </div>
+</div>
+
+<!-- EDIT FAB -->
+<button class="edit-fab" id="editFab" onclick="toggleEdit()">✏ Edit Mode</button>
+
+<!-- ═══════ HOME PAGE ═══════ -->
+<div class="page active" id="page-home">
+
+<!-- HERO -->
+<section id="hero">
+  <p class="hero-eyebrow" id="d-heroEyebrow"></p>
+  <h1 class="hero-title" id="d-heroName"></h1>
+  <p class="hero-sub" id="d-heroSub"></p>
+  <div class="hero-cta">
+    <a href="#" class="btn-primary" onclick="navigate('home','work');return false;">View My Work ↓</a>
+    <a href="#" class="btn-ghost" onclick="navigate('home','contact');return false;">Get In Touch →</a>
+  </div>
+  <div class="scroll-hint"><div class="scroll-line"></div><span class="scroll-label">Scroll</span></div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="reveal">
+    <p class="section-label">// About Me</p>
+    <div class="red-rule"></div>
+    <h2 class="about-title" id="d-aboutTitle"></h2>
+    <p class="about-body" id="d-aboutP1"></p>
+    <p class="about-body" id="d-aboutP2"></p>
+    <div class="about-stats">
+      <div><div class="stat-num" id="d-stat1n"></div><div class="stat-lbl" id="d-stat1l"></div></div>
+      <div><div class="stat-num" id="d-stat2n"></div><div class="stat-lbl" id="d-stat2l"></div></div>
+      <div><div class="stat-num" id="d-stat3n"></div><div class="stat-lbl" id="d-stat3l"></div></div>
+      <div><div class="stat-num" id="d-stat4n"></div><div class="stat-lbl" id="d-stat4l"></div></div>
+    </div>
+  </div>
+  <div class="about-frame-wrap reveal">
+    <div class="about-frame">
+      <div class="frame-grid"></div>
+      <div class="frame-name">
+        <h3 id="d-frameName"></h3>
+        <p id="d-frameRole"></p>
+      </div>
+    </div>
+    <div class="corner tr"></div><div class="corner bl"></div>
+  </div>
+</section>
+
+<!-- WORK -->
+<section id="work">
+  <div class="work-intro reveal">
+    <div><p class="section-label">// Selected Work</p><h2 class="work-title">Projects</h2></div>
+    <div class="work-sub-note">03 PROJECTS</div>
+  </div>
+  <div class="projects" id="d-projects"></div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <p class="section-label reveal">// Expertise</p>
+  <div class="red-rule reveal"></div>
+  <div class="skills-grid" id="d-skills-grid"></div>
+</section>
+
+<!-- APPENDIX -->
+<section id="appendix">
+  <div class="appendix-intro reveal">
+    <p class="section-label">// Appendix</p>
+    <div class="red-rule"></div>
+    <h2 class="appendix-title">Archive &<br><em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--white-dim);">Reference</em></h2>
+    <p class="about-body">Additional work, references, case studies, and documentation that didn't fit elsewhere.</p>
+  </div>
+  <div class="appendix-items" id="d-appendix-items"></div>
+  <button class="appendix-add-btn" id="appendix-add-btn" style="display:none" onclick="switchToAppendixEdit()">+ Add Appendix Entry</button>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <p class="contact-eyebrow reveal">// Let's Connect</p>
+  <h2 class="contact-title reveal">Let's<br>Talk.</h2>
+  <p class="contact-sub reveal" id="d-contactSub"></p>
+  <a class="contact-email reveal" id="d-email"></a>
+  <div class="socials reveal" id="d-socials"></div>
+</section>
+
+<footer>
+  <span class="foot-copy" id="d-footerName"></span>
+  <span class="foot-copy" id="d-footerCity"></span>
+</footer>
+</div><!-- /page-home -->
+
+<!-- ═══════ PROJECT DETAIL PAGE ═══════ -->
+<div class="page" id="page-project">
+  <section id="project-detail">
+    <button class="pd-back" onclick="navigate('home','work')">← Back to Work</button>
+    <p class="pd-eyebrow" id="pd-eyebrow"></p>
+    <h1 class="pd-title" id="pd-title"></h1>
+    <div class="pd-meta">
+      <div class="pd-meta-item"><label>Role</label><span id="pd-role"></span></div>
+      <div class="pd-meta-item"><label>Year</label><span id="pd-year"></span></div>
+      <div class="pd-meta-item"><label>Type</label><span id="pd-type"></span></div>
+    </div>
+    <div class="pd-media" id="pd-media"></div>
+    <div class="pd-body-grid">
+      <div>
+        <p class="pd-section-label">// Overview</p>
+        <div class="pd-rule"></div>
+        <p class="pd-text" id="pd-overview"></p>
+        <div class="pd-tags" id="pd-tags"></div>
+      </div>
+      <div>
+        <p class="pd-section-label">// Outcome</p>
+        <div class="pd-rule"></div>
+        <p class="pd-text" id="pd-outcome"></p>
+      </div>
+    </div>
+    <p class="pd-section-label">// Gallery</p>
+    <div class="pd-rule"></div>
+    <div class="pd-gallery" id="pd-gallery"></div>
+  </section>
+  <footer>
+    <span class="foot-copy" id="pd-footerName"></span>
+    <span class="foot-copy" id="pd-footerCity"></span>
+  </footer>
+</div><!-- /page-project -->
+
+<script>
+/* ══════════════════════════════
+   DEFAULT DATA
+══════════════════════════════ */
+const DEFAULTS = {
+  logoInitials:'AV',
+  name:'Alex Voss',
+  role:'Creative Developer / Designer',
+  heroEyebrow:'Available for projects · 2025',
+  heroSub:'A designer & creative developer crafting digital experiences that live at the intersection of art, technology, and storytelling.',
+  aboutTitle:'Turning ideas\ninto experiences',
+  aboutP1:"I'm a multidisciplinary designer and developer based in Amsterdam. With over 8 years of experience, I specialize in creating immersive digital environments that push boundaries and challenge conventions.",
+  aboutP2:'My work spans branding, interactive web design, motion, and creative coding — always with an obsessive attention to detail and a relentless pursuit of originality.',
+  stat1n:'8+', stat1l:'Years experience',
+  stat2n:'64.', stat2l:'Projects delivered',
+  stat3n:'12+', stat3l:'Design awards',
+  stat4n:'30+', stat4l:'Happy clients',
+  email:'hello@alexvoss.studio',
+  contactSub:'Open to new collaborations, freelance projects, and opportunities to create something extraordinary.',
+  soc1l:'Twitter', soc1u:'#',
+  soc2l:'LinkedIn', soc2u:'#',
+  soc3l:'Dribbble', soc3u:'#',
+  soc4l:'GitHub', soc4u:'#',
+  city:'Amsterdam NL',
+  footerName:'© 2025 Alex Voss · All Rights Reserved',
+  projects:[
+    {title:'Project Title Here', desc:'Write a short description of this project. What was it about, what was your role, and what made it special?', tags:['Branding','Motion','Web'], role:'Creative Direction', year:'2024', type:'Brand Identity', overview:'Expand on the project here. Describe the challenge, your approach, and the creative process in more detail.', outcome:'Describe the results. What impact did the project have? What did you learn? What are you most proud of?'},
+    {title:'Project Title Here', desc:'Write a short description of this project. What was it about, what was your role, and what made it special?', tags:['UI/UX','Creative Dev','3D'], role:'UI / UX Design', year:'2023', type:'Digital Product', overview:'Expand on the project here.', outcome:'Describe the results.'},
+    {title:'Project Title Here', desc:'Write a short description of this project. What was it about, what was your role, and what made it special?', tags:['Editorial','Typography','Print'], role:'Art Direction', year:'2023', type:'Editorial', overview:'Expand on the project here.', outcome:'Describe the results.'}
+  ],
+  skills:[
+    {name:'Creative Direction', desc:'Defining visual language, narrative, and aesthetic identity for brands and digital products.', pct:90},
+    {name:'UI / UX Design', desc:'Crafting intuitive interfaces grounded in deep research and obsessive attention to usability.', pct:85},
+    {name:'Creative Coding', desc:'Building interactive, generative, and immersive experiences with JavaScript, WebGL, and Three.js.', pct:80},
+    {name:'Motion Design', desc:'Bringing stillness to life through considered timing, easing, and choreographed transitions.', pct:75},
+    {name:'Typography', desc:'A long-standing obsession with type: letterforms, rhythm, hierarchy, and the spaces in between.', pct:88},
+    {name:'Branding', desc:'Building complete visual identities from logo to system — cohesive, scalable, and memorable.', pct:78}
+  ],
+  appendix:[]
+};
+
+/* Load from localStorage or use defaults */
+function load(){
+  try{return Object.assign({},DEFAULTS,JSON.parse(localStorage.getItem('pf_data')||'{}'));}
+  catch(e){return Object.assign({},DEFAULTS);}
+}
+function save(data){
+  localStorage.setItem('pf_data',JSON.stringify(data));
+  showToast();
+}
+
+
+/* ══════════════════════════════
+   RENDER HOME
+══════════════════════════════ */
+function renderHome(){
+  // nav logo
+  document.getElementById('nav-logo').innerHTML = D.logoInitials + '<span>.</span>';
+  // hero
+  document.getElementById('d-heroEyebrow').textContent = D.heroEyebrow;
+  const nameParts = D.name.split(' ');
+  const first = nameParts[0]||'';
+  const last = nameParts.slice(1).join(' ')||'';
+  document.getElementById('d-heroName').innerHTML = first+'<br><em>'+last+'</em>';
+  document.getElementById('d-heroSub').textContent = D.heroSub;
+  // about
+  document.getElementById('d-aboutTitle').innerHTML = D.aboutTitle.replace('\n','<br>');
+  document.getElementById('d-aboutP1').textContent = D.aboutP1;
+  document.getElementById('d-aboutP2').textContent = D.aboutP2;
+  document.getElementById('d-frameName').innerHTML = D.name.replace(' ','<br>').toUpperCase();
+  document.getElementById('d-frameRole').textContent = D.role;
+  // stats
+  ['1','2','3','4'].forEach(i=>{
+    document.getElementById('d-stat'+i+'n').textContent = D['stat'+i+'n'];
+    document.getElementById('d-stat'+i+'l').textContent = D['stat'+i+'l'];
+  });
+  // projects
+  const pg = document.getElementById('d-projects');
+  pg.innerHTML = D.projects.map((p,i)=>`
+    <div class="project-card reveal reveal-delay-${i+1}" onclick="openProject(${i})" style="cursor:none">
+      <div class="media-slot">
+        <div class="media-slot-placeholder">
+          <div class="placeholder-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+          <span class="placeholder-label">Add your photo or video</span>
+          <div class="placeholder-types"><span class="ptype">JPG</span><span class="ptype">MP4</span><span class="ptype">YouTube</span></div>
+        </div>
+        <div class="media-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-num">0${i+1}</div>
+        <h3 class="card-title">${p.title}</h3>
+        <p class="card-desc">${p.desc}</p>
+        <div class="card-tags">${p.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-link">View Project</span>
+        <span class="card-arrow">↗</span>
+      </div>
+    </div>`).join('');
+  // skills
+  const sg = document.getElementById('d-skills-grid');
+  sg.innerHTML = D.skills.map((s,i)=>`
+    <div class="skill-block reveal" data-skill="${s.pct}">
+      <div class="skill-num">0${i+1}</div>
+      <div class="skill-name">${s.name}</div>
+      <div class="skill-desc">${s.desc}</div>
+      <div class="skill-bar"><div class="skill-fill"></div></div>
+    </div>`).join('');
+  // appendix
+  const ai = document.getElementById('d-appendix-items');
+  if(D.appendix && D.appendix.length>0){
+    ai.innerHTML = D.appendix.map((a,i)=>`
+      <div class="appendix-item reveal">
+        <div class="appendix-item-num">A${String(i+1).padStart(2,'0')}</div>
+        <div class="appendix-item-title">${a.title}</div>
+        <div class="appendix-item-desc">${a.desc}</div>
+        ${a.url?`<a href="${a.url}" class="appendix-item-link" target="_blank">View Reference ↗</a>`:''}
+      </div>`).join('');
+  } else {
+    ai.innerHTML = '<div class="appendix-empty">No entries yet — add some in Edit Mode</div>';
+  }
+  // contact
+  document.getElementById('d-contactSub').textContent = D.contactSub;
+  const emailEl = document.getElementById('d-email');
+  emailEl.textContent = D.email;
+  emailEl.href = 'mailto:'+D.email;
+  const socs = document.getElementById('d-socials');
+  socs.innerHTML = ['1','2','3','4'].map(i=>{
+    const l=D['soc'+i+'l'], u=D['soc'+i+'u'];
+    return l?`<a href="${u}" class="soc-link" target="_blank">${l}</a>`:''
+  }).join('');
+  // footer
+  document.getElementById('d-footerName').innerHTML = D.footerName;
+  document.getElementById('d-footerCity').textContent = D.city;
+  // re-observe reveals
+  setupReveal();
+  // show add btn if edit mode
+  document.getElementById('appendix-add-btn').style.display = editOpen?'block':'none';
+  updateCursorListeners();
+}
+
+/* ══════════════════════════════
+   PROJECT DETAIL PAGE
+══════════════════════════════ */
+async function openProject(idx){
+   const response = await fetch(`/api/gallery/${idx}`);
+    const galleryFiles = await response.json();
+
+    document.getElementById("pd-gallery").innerHTML =
+        galleryFiles.length > 0
+            ? galleryFiles.map(filePath => `
+                <div class="pd-gallery-slot">
+                    <img src="${filePath}" alt="" class="pd-gallery-image">
+                </div>
+            `).join("")
+            : `
+                <div class="pd-gallery-slot">
+                    <span class="pd-gallery-empty">No images found</span>
+                </div>
+            `;
+
+    const p = D.projects[idx];
+
+    document.getElementById("pd-eyebrow").textContent = "// Project 0" + (idx + 1);
+    document.getElementById("pd-title").textContent = p.title;
+    document.getElementById("pd-role").textContent = p.role || "—";
+    document.getElementById("pd-year").textContent = p.year || "—";
+    document.getElementById("pd-type").textContent = p.type || "—";
+    document.getElementById("pd-overview").textContent = p.overview || p.desc;
+    document.getElementById("pd-outcome").textContent = p.outcome || "";
+    document.getElementById("pd-tags").innerHTML =
+        (p.tags || []).map(t => `<span class="tag">${t}</span>`).join("");
+
+    navigate("project");
+}
+
+/* ══════════════════════════════
+   SPA NAVIGATION
+══════════════════════════════ */
+function navigate(page, anchor){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  window.scrollTo(0,0);
+  if(anchor){
+    setTimeout(()=>{
+      const el=document.getElementById(anchor);
+      if(el)el.scrollIntoView({behavior:'smooth'});
+    },80);
+  }
+}
+
+/* ══════════════════════════════
+   EDIT PANEL
+══════════════════════════════ */
+let editOpen = false;
+function toggleEdit(){
+  editOpen = !editOpen;
+  document.getElementById('editPanel').classList.toggle('open', editOpen);
+  document.getElementById('editFab').classList.toggle('active', editOpen);
+  document.getElementById('editFab').textContent = editOpen ? '✓ Done Editing' : '✏ Edit Mode';
+  if(editOpen){ populateForm(); }
+  document.getElementById('appendix-add-btn').style.display = editOpen?'block':'none';
+}
+
+function switchTab(name){
+  document.querySelectorAll('.ep-tab-content').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  document.querySelectorAll('.ep-tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function switchToAppendixEdit(){
+  if(!editOpen) toggleEdit();
+  setTimeout(()=>{
+    document.querySelectorAll('.ep-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.ep-tab')[5].classList.add('active');
+    document.querySelectorAll('.ep-tab-content').forEach(t=>t.style.display='none');
+    document.getElementById('tab-appendix').style.display='block';
+  },100);
+}
+
+function populateForm(){
+  // General
+  const fields=['logoInitials','name','role','heroEyebrow','heroSub','aboutTitle','aboutP1','aboutP2',
+    'stat1n','stat1l','stat2n','stat2l','stat3n','stat3l','stat4n','stat4l'];
+  fields.forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value=D[f]||'';});
+  // Contact
+  ['email','contactSub','soc1l','soc1u','soc2l','soc2u','soc3l','soc3u','soc4l','soc4u','city','footerName'].forEach(f=>{
+    const el=document.getElementById('f-'+f);if(el)el.value=D[f]||'';
+  });
+  // Projects
+  [1,2,3].forEach(i=>{
+    const p = D.projects[i-1]||{};
+    const container = document.getElementById('tab-project'+i);
+    container.innerHTML = `
+      <div class="ep-section">
+        <div class="ep-section-title">// Project ${i} — Card</div>
+        <div class="ep-row"><label class="ep-label">Title</label><input class="ep-input" id="p${i}-title" type="text" value="${esc(p.title||'')}"></div>
+        <div class="ep-row"><label class="ep-label">Short description (card)</label><textarea class="ep-textarea" id="p${i}-desc">${esc(p.desc||'')}</textarea></div>
+        <div class="ep-row">
+          <label class="ep-label">Tags (click × to remove)</label>
+          <div class="ep-tag-list" id="p${i}-tag-list"></div>
+          <div class="ep-tag-add"><input type="text" id="p${i}-tag-input" placeholder="New tag…"><button onclick="addTag(${i-1})">+ Add</button></div>
+        </div>
+      </div>
+      <div class="ep-section">
+        <div class="ep-section-title">// Project ${i} — Detail Page</div>
+        <div class="ep-row"><label class="ep-label">Role</label><input class="ep-input" id="p${i}-role" type="text" value="${esc(p.role||'')}"></div>
+        <div class="ep-row"><label class="ep-label">Year</label><input class="ep-input" id="p${i}-year" type="text" value="${esc(p.year||'')}"></div>
+        <div class="ep-row"><label class="ep-label">Type / Category</label><input class="ep-input" id="p${i}-type" type="text" value="${esc(p.type||'')}"></div>
+        <div class="ep-row"><label class="ep-label">Overview (long description)</label><textarea class="ep-textarea" id="p${i}-overview">${esc(p.overview||'')}</textarea></div>
+        <div class="ep-row"><label class="ep-label">Outcome / Results</label><textarea class="ep-textarea" id="p${i}-outcome">${esc(p.outcome||'')}</textarea></div>
+      </div>
+      <button class="ep-save-btn" onclick="saveAll()">Save All Changes</button>`;
+    renderTagList(i-1);
+  });
+  // Skills
+  const se = document.getElementById('skills-editor');
+  se.innerHTML = `<div class="ep-section-title">// Skills</div>` +
+    D.skills.map((s,i)=>`
+      <div class="ep-row" style="border-bottom:1px solid rgba(245,240,235,.05);padding-bottom:1rem;margin-bottom:1rem;">
+        <label class="ep-label">Skill ${i+1} name</label><input class="ep-input" id="sk${i}-name" type="text" value="${esc(s.name)}" style="margin-bottom:.4rem;">
+        <label class="ep-label">Description</label><textarea class="ep-textarea" id="sk${i}-desc" style="min-height:56px">${esc(s.desc)}</textarea>
+        <label class="ep-label" style="margin-top:.4rem">Level (0–100)</label><input class="ep-input" id="sk${i}-pct" type="number" min="0" max="100" value="${s.pct}">
+      </div>`).join('');
+  // Appendix
+  renderAppendixEditor();
+}
+
+function renderTagList(idx){
+  const i = idx+1;
+  const tl = document.getElementById('p'+i+'-tag-list');
+  if(!tl) return;
+  const tags = D.projects[idx].tags||[];
+  tl.innerHTML = tags.map((t,j)=>`<div class="ep-tag">${t} <span onclick="removeTag(${idx},${j})">×</span></div>`).join('');
+}
+
+function addTag(idx){
+  const i=idx+1;
+  const inp=document.getElementById('p'+i+'-tag-input');
+  const val=inp.value.trim();
+  if(!val)return;
+  if(!D.projects[idx].tags) D.projects[idx].tags=[];
+  D.projects[idx].tags.push(val);
+  inp.value='';
+  renderTagList(idx);
+}
+
+function removeTag(idx,j){
+  D.projects[idx].tags.splice(j,1);
+  renderTagList(idx);
+}
+
+function renderAppendixEditor(){
+  const ae = document.getElementById('appendix-editor');
+  if(!D.appendix) D.appendix=[];
+  ae.innerHTML = `<div class="ep-section-title">// Appendix Entries</div>` +
+    D.appendix.map((a,i)=>`
+      <div style="border:1px solid rgba(245,240,235,.07);padding:1rem;margin-bottom:1rem;position:relative;">
+        <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:.7rem;">Entry ${i+1} <span style="cursor:pointer;float:right;color:rgba(245,240,235,.4);" onclick="removeAppendix(${i})">× Remove</span></div>
+        <label class="ep-label">Title</label><input class="ep-input" id="ap${i}-title" type="text" value="${esc(a.title||'')}" style="margin-bottom:.5rem">
+        <label class="ep-label">Description</label><textarea class="ep-textarea" id="ap${i}-desc" style="min-height:56px">${esc(a.desc||'')}</textarea>
+        <label class="ep-label" style="margin-top:.4rem">URL (optional)</label><input class="ep-input" id="ap${i}-url" type="text" value="${esc(a.url||'')}">
+      </div>`).join('') +
+    `<button class="ep-save-btn" style="background:rgba(224,48,48,.15);border:1px solid rgba(224,48,48,.3);" onclick="addAppendix()">+ Add New Entry</button>`;
+}
+
+function addAppendix(){
+  if(!D.appendix) D.appendix=[];
+  D.appendix.push({title:'New Entry',desc:'',url:''});
+  renderAppendixEditor();
+}
+
+function removeAppendix(i){
+  D.appendix.splice(i,1);
+  renderAppendixEditor();
+}
+
+function esc(str){return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function saveAll(){
+  // General
+  ['logoInitials','name','role','heroEyebrow','heroSub','aboutTitle','aboutP1','aboutP2',
+   'stat1n','stat1l','stat2n','stat2l','stat3n','stat3l','stat4n','stat4l'].forEach(f=>{
+    const el=document.getElementById('f-'+f);if(el) D[f]=el.value;
+  });
+  // Contact
+  ['email','contactSub','soc1l','soc1u','soc2l','soc2u','soc3l','soc3u','soc4l','soc4u','city','footerName'].forEach(f=>{
+    const el=document.getElementById('f-'+f);if(el) D[f]=el.value;
+  });
+  // Projects
+  [0,1,2].forEach(idx=>{
+    const i=idx+1;
+    ['title','desc','role','year','type','overview','outcome'].forEach(field=>{
+      const el=document.getElementById('p'+i+'-'+field);
+      if(el) D.projects[idx][field]=el.value;
+    });
+  });
+  // Skills
+  D.skills.forEach((s,i)=>{
+    const n=document.getElementById('sk'+i+'-name'), de=document.getElementById('sk'+i+'-desc'), pc=document.getElementById('sk'+i+'-pct');
+    if(n) s.name=n.value;
+    if(de) s.desc=de.value;
+    if(pc) s.pct=parseInt(pc.value)||80;
+  });
+  // Appendix
+  if(!D.appendix) D.appendix=[];
+  D.appendix.forEach((a,i)=>{
+    const t=document.getElementById('ap'+i+'-title'),de=document.getElementById('ap'+i+'-desc'),u=document.getElementById('ap'+i+'-url');
+    if(t)a.title=t.value;
+    if(de)a.desc=de.value;
+    if(u)a.url=u.value;
+  });
+  save(D);
+  renderHome();
+}
+
+/* ══════════════════════════════
+   REVEAL ON SCROLL
+══════════════════════════════ */
+let obs;
+function setupReveal(){
+  if(obs) obs.disconnect();
+  obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('visible');
+        const bar=e.target.querySelector('.skill-fill');
+        if(bar){const pct=e.target.dataset.skill||80;setTimeout(()=>{bar.style.width=pct+'%';},200);}
+        obs.unobserve(e.target);
+      }
+    });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>{el.classList.remove('visible');obs.observe(el);});
+}
+
+/* ══════════════════════════════
+   TOAST
+══════════════════════════════ */
+function showToast(){
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+/* ══════════════════════════════
+   GALAXY
+══════════════════════════════ */
+const canvas=document.getElementById('galaxy');
+const ctx=canvas.getContext('2d');
+let W,H,stars=[],nebulae=[];
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+function initStars(){
+  stars=[];nebulae=[];
+  const n=Math.floor(W*H/1900);
+  for(let i=0;i<n;i++){stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.7,alpha:Math.random()*.85+.15,ts:Math.random()*.013+.003,to:Math.random()*Math.PI*2,vx:(Math.random()-.5)*.035,vy:(Math.random()-.5)*.035,red:Math.random()<.06});}
+  for(let i=0;i<6;i++){nebulae.push({x:Math.random()*W,y:Math.random()*H,r:160+Math.random()*220,red:Math.random()<.35,a:.025+Math.random()*.04});}
+}
+let T=0;
+function draw(){
+  ctx.clearRect(0,0,W,H);T+=.008;
+  nebulae.forEach(n=>{const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r);const c=n.red?`rgba(224,48,48,${n.a})`:`rgba(245,240,235,${n.a*.6})`;g.addColorStop(0,c);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fill();});
+  stars.forEach(s=>{const f=Math.sin(T*s.ts*60+s.to)*.35+.65;const a=s.alpha*f;ctx.beginPath();ctx.fillStyle=s.red?`rgba(224,90,90,${a})`:`rgba(245,240,235,${a})`;ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();if(s.r>1.1){const gw=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*5);gw.addColorStop(0,s.red?`rgba(224,48,48,${a*.35})`:`rgba(245,240,235,${a*.2})`);gw.addColorStop(1,'transparent');ctx.fillStyle=gw;ctx.beginPath();ctx.arc(s.x,s.y,s.r*5,0,Math.PI*2);ctx.fill();}s.x+=s.vx;s.y+=s.vy;if(s.x<0)s.x=W;if(s.x>W)s.x=0;if(s.y<0)s.y=H;if(s.y>H)s.y=0;});
+  requestAnimationFrame(draw);
+}
+resize();initStars();draw();
+window.addEventListener('resize',()=>{resize();initStars();});
+
+/* ══════════════════════════════
+   CURSOR
+══════════════════════════════ */
+const cur=document.getElementById('cur');
+const ring=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
+function updateCursorListeners(){
+  document.querySelectorAll('a,button,.project-card,.appendix-item').forEach(el=>{
+    el.removeEventListener('mouseenter',curIn);el.removeEventListener('mouseleave',curOut);
+    el.addEventListener('mouseenter',curIn);el.addEventListener('mouseleave',curOut);
+  });
+}
+function curIn(){cur.style.transform='translate(-50%,-50%) scale(2.2)';ring.style.transform='translate(-50%,-50%) scale(1.5)';ring.style.borderColor='rgba(224,48,48,.8)';}
+function curOut(){cur.style.transform='translate(-50%,-50%) scale(1)';ring.style.transform='translate(-50%,-50%) scale(1)';ring.style.borderColor='rgba(224,48,48,.45)';}
+
+/* ══════════════════════════════
+   INIT
+══════════════════════════════ */
+let D = load();
+
+async function initialize() {
+    try {
+        const response = await fetch("/data.json");
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const json = await response.json();
+
+        // Merge JSON values into existing defaults/localStorage data
+        D = {
+            ...D,
+            ...json
+        };
+    } catch (error) {
+        console.warn("Could not load data.json, using existing data.", error);
+    }
+
+    renderHome();
+}
+
+initialize();
+//renderHome();
+</script>
+</body>
+</html>
